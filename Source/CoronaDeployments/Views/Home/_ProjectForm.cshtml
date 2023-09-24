@@ -1,0 +1,22 @@
+﻿@model ProjectCreateModel
+
+<div class="form-group">
+    <label asp-for="Name"></label>
+    <input class="form-control" asp-for="Name" />
+    <span asp-validation-for="Name"></span>
+</div>
+<div class="form-group">
+    <label>Repository Url</label>
+    <input class="form-control" asp-for="RepositoryUrl" type="url" />
+    <span asp-validation-for="RepositoryUrl"></span>
+</div>
+<div class="form-group">
+    <label>Branch Name (If applicable)</label>
+    <input class="form-control" asp-for="BranchName" type="text" />
+    <span asp-validation-for="BranchName"></span>
+</div>
+<div class="form-group">
+    <label>Repository Type</label>
+    <select class="form-control" asp-for="RepositoryType" asp-items="Utils.FromEnum<SourceCodeRepositoryType>()"></select>
+    <span asp-validation-for="RepositoryType"></span>
+</div>

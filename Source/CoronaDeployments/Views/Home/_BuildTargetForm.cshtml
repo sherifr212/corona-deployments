@@ -1,0 +1,22 @@
+﻿@model BuildTargetCreateModel
+
+<div class="form-group">
+    <label asp-for="Name"></label>
+    <input class="form-control" asp-for="Name" />
+    <span asp-validation-for="Name"></span>
+</div>
+<div class="form-group">
+    <label>Relative Path</label>
+    <input class="form-control" asp-for="TargetRelativePath" type="text" />
+    <span asp-validation-for="TargetRelativePath"></span>
+</div>
+<div class="form-group">
+    <label>Publish Type</label>
+    <select class="form-control" asp-for="Type" asp-items="Utils.FromEnum<BuildTargetType>()"></select>
+    <span asp-validation-for="Type"></span>
+</div>
+<div class="form-group">
+    <label>Deployment Type</label>
+    <select class="form-control" asp-for="DeploymentType" asp-items="Utils.FromEnum<DeployTargetType>()"></select>
+    <span asp-validation-for="DeploymentType"></span>
+</div>

@@ -1,0 +1,18 @@
+﻿@model BuildTargetCreateModel 
+
+@{
+    ViewData["Title"] = "Create Build Target";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+
+<form asp-action="CreateBuildTarget" method="POST">
+    @Html.HiddenFor(x => x.ProjectId)
+
+    @await Html.PartialAsync("_BuildTargetForm", Model)
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</form>

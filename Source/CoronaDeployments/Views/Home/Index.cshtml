@@ -1,0 +1,92 @@
+﻿@model IReadOnlyList<Project>
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<h1 class="display-4">Projects</h1>
+
+@if (Model != null && Model.Count > 0)
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Build Targets</th>
+
+                <th></th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>
+                        <ul>
+                            @if (item.BuildTargets == null || item.BuildTargets.Count() == 0)
+                            {
+                                <li>No build targets yet!</li>
+                            }
+                            else
+                            {
+                                foreach (var bt in item.BuildTargets)
+                                {
+                                    <li>@bt.Name</li>
+                                }
+                            }
+                        </ul>
+                    </td>
+
+                    <td>
+                        <a asp-controller="Home" asp-action="CreateBuildTarget" asp-route-projectId="@item.Id" class="btn btn-info">Add Build Target</a>
+
+                        <a asp-controller="Home" asp-action="CreateRepositoryCursor" asp-route-projectId="@item.Id" class="btn btn-info">Add Repository Cursor</a>
+
+                        <!-- Button trigger modal -->
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#cursorModal_@item.Id">
+                            Create Build & Deploy Request
+                        </button>
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="cursorModal_@item.Id" tabindex="-1" role="dialog" aria-hidden="true">
+                            <div class="modal-dialog modal-lg" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">@item.Name - Select a Repository Cursor</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form asp-action="CreateBuildAndDeployRequest" method="post" style=" width: 100%;">
+                                            <input type="hidden" name="projectId" value="@item.Id" />
+
+                                            <select name="cursorId" class="form-control">
+                                                @foreach (var c in item.Cursors)
+                                                {
+                                                    <option value="@c.Id">@c.Name</option>
+                                                }
+                                            </select>
+
+                                            <button type="submit" class="btn btn-primary mt-3">Create</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p class="alert alert-info">
+        There is no projects yet!
+    </p>
+}

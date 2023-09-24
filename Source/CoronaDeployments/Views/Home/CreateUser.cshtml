@@ -1,0 +1,16 @@
+﻿@model UserCreateModel
+
+@{
+    ViewData["Title"] = "Create User";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+
+<form asp-action="CreateUser" method="POST">
+    @await Html.PartialAsync("_UserForm", Model)
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</form>

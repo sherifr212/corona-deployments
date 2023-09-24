@@ -1,0 +1,27 @@
+﻿@model IISBuildTargetConfigurationCreateModel
+
+@{
+    ViewData["Title"] = "Create IIS Deploy Configuration";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+
+<form asp-action="CreateIISBuildTargetConfiguration" method="post">
+    @Html.HiddenFor(x => x.ProjectId)
+    @Html.HiddenFor(x => x.BuildTargetId)
+
+    <div class="form-group">
+        <label>Port</label>
+        <input class="form-control" asp-for="Configuration.Port" type="number" />
+        <span asp-validation-for="Configuration.Port"></span>
+    </div>
+
+    <div class="form-group">
+        <label>Site Name</label>
+        <input class="form-control" asp-for="Configuration.SiteName" type="text" />
+        <span asp-validation-for="Configuration.SiteName"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>

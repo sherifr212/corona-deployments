@@ -1,0 +1,64 @@
+﻿@model BuildAndDeployRequestModel
+
+@{
+    ViewData["Title"] = "Build And Deploy Request";
+}
+
+@section Scripts {
+    <script>
+        $(() => {
+            window.setInterval(() => window.location.reload(true), 30000);
+        });
+    </script>
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="row col-12">
+
+    <br />
+
+    <table>
+        <thead>
+            <tr>
+                <th colspan="2">Project</th>
+            </tr>
+            <tr>
+                <td colspan="2">@Model.Project.Name</td>
+            </tr>
+
+            <tr>
+                <th colspan="2">Cursor</th>
+            </tr>
+
+            <tr>
+                <td colspan="2">
+                    @Model.Cursor.Name - @Model.Cursor.Info.CommitId  - @Model.Cursor.Info.CommitComment - @Model.Cursor.Info.CommitExtra - @Model.Cursor.Info.CommitStamp
+                </td>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td class="font-weight-bold">Request Current State</td>
+                <td>@Model.Request.State</td>
+            </tr>
+
+            <tr>
+                <td class="font-weight-bold">Request Started At</td>
+                <td>@Model.Request.StartedAtUtc</td>
+            </tr>
+
+            <tr>
+                <td class="font-weight-bold">Request Completed At</td>
+                <td>@Model.Request.CompletedAtUtc</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <br />
+
+    <div class="col-12" style="background-color: black;">
+        @Html.Raw(Model.Request.Log ?? string.Empty)
+    </div>
+</div>

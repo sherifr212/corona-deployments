@@ -1,0 +1,75 @@
+﻿@model RepositoryCursorCreateModel
+
+@{
+    ViewData["Title"] = "Create Repository Cursor";
+}
+
+@section Scripts{
+    <script>
+        $(() => {
+            $('input[type="radio"][name="Selected.CommitId"]').on('change', (x) => {
+                var e = $(x.target);
+
+                $('#Selected_CommitComment').val(e.data('comment'));
+                $('#Selected_CommitStamp').val(e.data('stamp'));
+                $('#Selected_CommitExtra').val(e.data('extra'));
+            });
+        });
+    </script>
+}
+
+<h1>@ViewData["Title"] - (@Model.ProjectName)</h1>
+
+@if (Model.Commits != null)
+{
+    <form asp-action="CreateRepositoryCursor" method="post">
+        @Html.HiddenFor(x => x.ProjectId)
+        @Html.HiddenFor(x => x.Selected.CommitStamp)
+        @Html.HiddenFor(x => x.Selected.CommitComment)
+        @Html.HiddenFor(x => x.Selected.CommitExtra)
+
+        <div class="form-group">
+            <label asp-for="Name"></label>
+            <input class="form-control" asp-for="Name" required min="6" />
+            <span asp-validation-for="Name"></span>
+        </div>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Commit Id</th>
+                    <th>Commit Comment</th>
+                    <th>Commit Created At</th>
+                    <th>Commit Extra</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var item in Model.Commits.OrderByDescending(x => x.CommitStamp))
+                {
+                    <tr>
+                        <td>
+                            <input type="radio" asp-for="Selected.CommitId" value="@item.CommitId"
+                                   data-comment="@item.CommitComment"
+                                   data-stamp="@item.CommitStamp"
+                                   data-extra="@item.CommitExtra" />
+                        </td>
+
+                        <td>
+                            @item.CommitId
+                        </td>
+
+                        <td>@item.CommitComment</td>
+
+                        <td>@item.CommitStamp</td>
+
+                        <td>@item.CommitExtra</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <button class="btn btn-primary" type="submit">Create</button>
+    </form>
+}

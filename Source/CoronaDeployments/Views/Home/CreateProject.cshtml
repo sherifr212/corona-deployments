@@ -1,0 +1,16 @@
+﻿@model ProjectCreateModel
+
+@{
+    ViewData["Title"] = "Create Project";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+
+<form asp-action="CreateProject" method="POST" class="needs-validation">
+    @await Html.PartialAsync("_ProjectForm", Model)
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</form>
