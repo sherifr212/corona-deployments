@@ -86,18 +86,33 @@ namespace CoronaDeployments
 
             services.AddSingleton<IDeployStrategy, InternetInformationServerDeploymentStrategy>();
 
-            // Add AppConfiguration
-            var appConfig = Configuration["AppConfiguration:BaseDirctory"];
-            services.AddSingleton(new AppConfiguration(appConfig));
+            // Add AppConfiguration with cross-platform path support
+            var baseDirectory = Configuration["AppConfiguration:BaseDirectory"] ?? 
+                               Environment.GetEnvironmentVariable("CORONA_BASE_DIRECTORY") ??
+                               Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "repository");
+            
+            services.AddSingleton(new AppConfiguration(baseDirectory));
 
-            // Add Credentials
-            var gitUsername = Configuration["GitAuthInfo:Username"];
-            var gitPassword = Configuration["GitAuthInfo:Password"];
-            services.AddSingleton<IRepositoryAuthenticationInfo>(new AuthInfo(gitUsername, gitPassword, SourceCodeRepositoryType.Git));
+            // Add Credentials from environment variables for security
+            var gitUsername = Environment.GetEnvironmentVariable("GIT_USERNAME") ?? 
+                             Configuration["GitAuthInfo:Username"] ?? string.Empty;
+            var gitPassword = Environment.GetEnvironmentVariable("GIT_PASSWORD") ?? 
+                             Configuration["GitAuthInfo:Password"] ?? string.Empty;
+            
+            if (!string.IsNullOrEmpty(gitUsername) || !string.IsNullOrEmpty(gitPassword))
+            {
+                services.AddSingleton<IRepositoryAuthenticationInfo>(new AuthInfo(gitUsername, gitPassword, SourceCodeRepositoryType.Git));
+            }
 
-            var svnUsername = Configuration["SvnAuthInfo:Username"];
-            var svnPassword = Configuration["SvnAuthInfo:Password"];
-            services.AddSingleton<IRepositoryAuthenticationInfo>(new AuthInfo(svnUsername, svnPassword, SourceCodeRepositoryType.Svn));
+            var svnUsername = Environment.GetEnvironmentVariable("SVN_USERNAME") ?? 
+                             Configuration["SvnAuthInfo:Username"] ?? string.Empty;
+            var svnPassword = Environment.GetEnvironmentVariable("SVN_PASSWORD") ?? 
+                             Configuration["SvnAuthInfo:Password"] ?? string.Empty;
+            
+            if (!string.IsNullOrEmpty(svnUsername) || !string.IsNullOrEmpty(svnPassword))
+            {
+                services.AddSingleton<IRepositoryAuthenticationInfo>(new AuthInfo(svnUsername, svnPassword, SourceCodeRepositoryType.Svn));
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

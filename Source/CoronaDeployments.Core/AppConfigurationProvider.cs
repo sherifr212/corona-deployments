@@ -1,12 +1,18 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace CoronaDeployments.Core
 {
     public class AppConfigurationProvider
     {
-        public async Task<AppConfiguration> Get()
+        public Task<AppConfiguration> Get()
         {
-            return new AppConfiguration(@"C:\Repository");
+            // Use environment variable or fallback to cross-platform default
+            var baseDirectory = Environment.GetEnvironmentVariable("CORONA_BASE_DIRECTORY") ??
+                               Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "repository");
+            
+            return Task.FromResult(new AppConfiguration(baseDirectory));
         }
     }
 

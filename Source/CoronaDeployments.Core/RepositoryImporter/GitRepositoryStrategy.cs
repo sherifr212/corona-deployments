@@ -84,13 +84,11 @@ namespace CoronaDeployments.Core.RepositoryImporter
                     Directory.CreateDirectory(path);
 
                     // Clone the repository first.
-                    var cloneOptions = new CloneOptions
+                    var cloneOptions = new CloneOptions();
+                    cloneOptions.FetchOptions.CredentialsProvider = (_url, _user, _cred) => new UsernamePasswordCredentials
                     {
-                        CredentialsProvider = (_url, _user, _cred) => new UsernamePasswordCredentials
-                        {
-                            Username = info.Username,
-                            Password = info.Password
-                        }
+                        Username = info.Username,
+                        Password = info.Password
                     };
 
                     var cloneResult = Repository.Clone(project.RepositoryUrl, path, cloneOptions);
