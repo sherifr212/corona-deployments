@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CoronaDeployments.Core;
 using CoronaDeployments.Core.Build;
+using CoronaDeployments.Core.Configuration;
 using CoronaDeployments.Core.Deploy;
 using CoronaDeployments.Core.HostedServices;
 using CoronaDeployments.Core.Repositories;
@@ -17,6 +18,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 
@@ -86,14 +88,44 @@ namespace CoronaDeployments
 
             services.AddSingleton<IDeployStrategy, InternetInformationServerDeploymentStrategy>();
 
-            // Add AppConfiguration with cross-platform path support
+            // Add AppConfiguration with cross-platform path support and validation
             var baseDirectory = Configuration["AppConfiguration:BaseDirectory"] ?? 
                                Environment.GetEnvironmentVariable("CORONA_BASE_DIRECTORY") ??
                                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "repository");
             
-            services.AddSingleton(new AppConfiguration(baseDirectory));
+            var appConfig = new AppConfiguration(baseDirectory);
+            var appConfigValidation = ConfigurationValidator.ValidateAppConfiguration(appConfig);
+            
+            if (!appConfigValidation.IsValid)
+            {
+                var logger = services.BuildServiceProvider().GetService<ILogger<Startup>>();
+                foreach (var error in appConfigValidation.Errors)
+                {
+                    logger?.LogError("Configuration validation error: {Error}", error);
+                }
+                throw new InvalidOperationException($"Invalid application configuration: {string.Join(", ", appConfigValidation.Errors)}");
+            }
+            
+            services.AddSingleton(appConfig);
 
-            // Add Credentials from environment variables for security
+            // Validate and add connection strings
+            var postgresConnection = Configuration.GetConnectionString("Postgres");
+            var redisConnection = Configuration.GetConnectionString("Redis");
+            
+            if (!string.IsNullOrEmpty(postgresConnection))
+            {
+                var postgresValidation = ConfigurationValidator.ValidateConnectionString(postgresConnection, "Postgres");
+                if (!postgresValidation.IsValid)
+                {
+                    var logger = services.BuildServiceProvider().GetService<ILogger<Startup>>();
+                    foreach (var error in postgresValidation.Errors)
+                    {
+                        logger?.LogWarning("Postgres connection validation: {Error}", error);
+                    }
+                }
+            }
+
+            // Add Credentials from environment variables for security with validation
             var gitUsername = Environment.GetEnvironmentVariable("GIT_USERNAME") ?? 
                              Configuration["GitAuthInfo:Username"] ?? string.Empty;
             var gitPassword = Environment.GetEnvironmentVariable("GIT_PASSWORD") ?? 
@@ -101,7 +133,19 @@ namespace CoronaDeployments
             
             if (!string.IsNullOrEmpty(gitUsername) || !string.IsNullOrEmpty(gitPassword))
             {
-                services.AddSingleton<IRepositoryAuthenticationInfo>(new AuthInfo(gitUsername, gitPassword, SourceCodeRepositoryType.Git));
+                var gitAuthInfo = new AuthInfo(gitUsername, gitPassword, SourceCodeRepositoryType.Git);
+                var gitValidation = ConfigurationValidator.ValidateAuthInfo(gitAuthInfo);
+                
+                if (!gitValidation.IsValid)
+                {
+                    var logger = services.BuildServiceProvider().GetService<ILogger<Startup>>();
+                    foreach (var error in gitValidation.Errors)
+                    {
+                        logger?.LogWarning("Git authentication validation: {Error}", error);
+                    }
+                }
+                
+                services.AddSingleton<IRepositoryAuthenticationInfo>(gitAuthInfo);
             }
 
             var svnUsername = Environment.GetEnvironmentVariable("SVN_USERNAME") ?? 
@@ -111,7 +155,19 @@ namespace CoronaDeployments
             
             if (!string.IsNullOrEmpty(svnUsername) || !string.IsNullOrEmpty(svnPassword))
             {
-                services.AddSingleton<IRepositoryAuthenticationInfo>(new AuthInfo(svnUsername, svnPassword, SourceCodeRepositoryType.Svn));
+                var svnAuthInfo = new AuthInfo(svnUsername, svnPassword, SourceCodeRepositoryType.Svn);
+                var svnValidation = ConfigurationValidator.ValidateAuthInfo(svnAuthInfo);
+                
+                if (!svnValidation.IsValid)
+                {
+                    var logger = services.BuildServiceProvider().GetService<ILogger<Startup>>();
+                    foreach (var error in svnValidation.Errors)
+                    {
+                        logger?.LogWarning("SVN authentication validation: {Error}", error);
+                    }
+                }
+                
+                services.AddSingleton<IRepositoryAuthenticationInfo>(svnAuthInfo);
             }
         }
 
