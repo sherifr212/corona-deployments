@@ -15,13 +15,14 @@ namespace CoronaDeployments.Core.Build
         {
             try
             {
-                var cmd = $"dotnet publish {sourcePath} -c Release --self-contained -r win-x64 -o {outPath}";
+                var arguments = $"publish {sourcePath} -c Release --self-contained -r win-x64 -o {outPath}";
 
                 customLogger.Information(string.Empty);
-                customLogger.Information(cmd);
+                customLogger.Information($"dotnet {arguments}");
                 customLogger.Information(string.Empty);
 
-                var output = await Shell.Execute(cmd);
+                // Use the new secure Shell.Execute method
+                var output = await Shell.Execute("dotnet", arguments);
 
                 var isError = string.IsNullOrEmpty(output) || output.Contains(": error");
 
